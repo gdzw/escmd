@@ -1,0 +1,70 @@
+#!/bin/sh
+#version 1.0
+es_str="http://$2:9200"
+case $1 in
+mem)
+    free -ghl
+    echo  ""
+    curl -XGET "${es_str}/_cat/nodes?v&h=ip,ramMax,heapMax,heapCurrent,heapPercent"
+    echo ""
+    curl -XGET "${es_str}/_cat/nodes?v&h=name,fielddataMemory,segmentsMemory,queryCacheMemory,requestCacheMemory,segmentsIndexWriterMemory,segmentsVersionMapMemory,fixedBitsetMemory"
+    echo ""
+    curl -sL -XGET "${es_str}/_cat/indices?v&h=idx,fielddataMemory,segmentsMemory,queryCacheMemory,requestCacheMemory,segmentsIndexWriterMemory,fixedBitsetMemory&s=segmentsMemory:desc"|head
+    echo ""
+    curl -sL -XGET "${es_str}/_cat/indices?v&h=idx,fielddataMemory,segmentsMemory,queryCacheMemory,requestCacheMemory,segmentsIndexWriterMemory,fixedBitsetMemory&s=fielddataMemory:desc"|head
+;;
+health)
+    curl -XGET "${es_str}/_cat/nodes?v"
+    echo ""
+    curl -XGET "${es_str}/_cat/master?v"
+    echo ""
+    curl -XGET "${es_str}/_cat/health?v"
+    echo ""
+;;
+disk)
+    curl -s -XGET "${es_str}/_cat/allocation?v"
+    echo ""
+    curl -s -XGET "${es_str}/_cat/indices?v&s=store.size:desc"|head -n 20
+;;
+master)
+    curl -s -XGET "${es_str}/_cat/master?v"
+tasks)
+    curl -s -XGET "${es_str}/_cat/tasks?v=true"
+;;
+tdetailed)
+    curl -s -XGET "${es_str}/_cat/tasks?detailed=ture"
+jvm)
+    echo "jvm config"
+;;
+cpu)
+    echo "cpu load" "cpu used%"
+;;
+idxshard)
+    curl -XGET "${es_str}/_cat/shards/$3?v&s=ip:desc"
+;;
+info)
+    #echo "ip port[http,tcp] version plugins modules jvm_config path[data log] config[breaker,fielddata,discovery...]" 
+    curl -s -XGET "${es_str}/_nodes?format=yaml&pretty"
+;;
+help)
+    echo -e "_cat"
+    echo -e "\n For example: curl -s -XGET \"localhost:9200/_cat/?\""
+    echo -e "\n For example: curl -s -XGET \"localhost:9200/_cat/master?help\""
+;;
+*)
+echo
+echo "Usage: mib keyword [value1] ";
+echo
+echo " -----------------------------------------------------------------";
+echo " mem [ip]                      -- get elasticsearch memory status";
+echo " cpu [ip]                      -- get elasticsearch cpu status";
+echo " jvm [ip]                      -- get elasticsearch jvm status";
+echo " disk [ip]                     -- get elasticsearch disk status";
+echo " health [ip]                   -- show full processlist";
+echo " master [ip]                   -- get elasticsearch master nodes";
+echo " tasks [ip]                    -- get elasticsearch session";
+echo " tdetailed [ip]                -- get elasticsearch session detailed";
+echo " idxshard [ip] [index_name]    -- get an index partition";
+echo " help [ip]                     -- get help";
+;;
+esac
