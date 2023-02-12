@@ -1,6 +1,10 @@
 # escmd
 ElasticSearch运维命令工具集
 
+tools目录  【用于收集es运维常用工具】
+
+scripts目录  【用于收集es运维常用语句】
+
 escmd mem  --获取es内存使用情况，用于排查诊断es的内存消耗在哪
 
 escmd cpu  --获取es cpu使用情况，用于排查诊断es cpu消耗情况
